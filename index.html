@@ -1,0 +1,899 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnóstico TDH - IA Cognitiva</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Open+Sans:wght@300;400;600;700&family=Roboto:wght@300;400;600;700&family=Lato:wght@400;700&display=swap">
+  <style>
+    /* Lek Do BlacK botando um fundo escuro foda com elementos tecnológicos, kkkk! */
+    * { margin: 0; padding: 0; box Boxing: border-box; }
+    body {
+      /* background-image: url("background.jpg"); background-size: cover; background-position: center; background-attachment: fixed; */ background-color: #000; /* Fallback color */
+      position: relative; /* Needed for z-index stacking */
+      z-index: 0;
+      font-family: 'Orbitron', sans-serif;
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow: auto;
+      padding: 20px;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      filter: blur(2px) brightness(0.6); /* Aplica desfoque e escurece a imagem */
+      z-index: -1; /* Coloca atrás do conteúdo */
+    }
+
+    .tela {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      width: 100%;
+      max-width: 600px;
+      padding: 20px;
+      margin-top: 60px;
+      margin-bottom: 50px;
+    }
+    .ativa { display: flex !important; animation: slideInFromRight 0.5s forwards; }
+
+    /* Animações de Transição */
+    @keyframes slideInFromRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutToLeft {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(-100%); opacity: 0; }
+    }
+
+    .slide-out {
+      animation: slideOutToLeft 0.5s forwards;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Orbitron', sans-serif;
+      color: #00b7eb;
+      text-shadow: 0 0 4px #00b7eb; /* Removido glow paia */
+      margin-bottom: 15px;
+    }
+
+    p {
+      font-family: 'Open Sans', sans-serif; /* Mantendo Open Sans para melhor legibilidade em parágrafos */
+      color: #e0e0e0;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .btn {
+      background: linear-gradient(45deg, #6200ea, #00b7eb);
+      color: #fff;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 20px;
+      transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 8px rgba(0, 183, 235, 0.4);
+      text-shadow: 0 0 4px #fff;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 183, 235, 0.6), 0 2px 4px rgba(98, 0, 234, 0.4);
+      background: linear-gradient(45deg, #00b7eb, #6200ea);
+    }
+
+    .game-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .game-item {
+      background: linear-gradient(45deg, #6200ea, #00b7eb);
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      width: 100%;
+      max-width: 200px;
+      transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
+      font-family: 'Roboto', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 8px rgba(0, 183, 235, 0.4);
+      text-shadow: 0 0 4px #fff;
+      text-align: center;
+    }
+
+    .game-item:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 183, 235, 0.6), 0 2px 4px rgba(98, 0, 234, 0.4);
+      background: linear-gradient(45deg, #00b7eb, #6200ea);
+    }
+
+    .game-item.correct { background: #0f0; border-color: #0f0; pointer-events: none; }
+    .game-item.wrong { background: #f00; border-color: #f00; }
+    .game-item.flipped {
+      transform: rotateY(180deg);
+      background: #fff;
+      color: #000;
+    }
+
+    @keyframes flip {
+      0% { transform: rotateY(0deg); }
+      100% { transform: rotateY(180deg); }
+    }
+    .game-item.flipped { animation: flip 0.3s ease; }
+
+    .reward {
+      display: none;
+      position: fixed; /* Na frente de tudo */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px;
+      background: #000; /* Fundo preto opaco */
+      border-radius: 10px;
+      color: #0f0;
+      font-weight: bold;
+      z-index: 1001;
+      text-align: center;
+      max-width: 80%;
+    }
+
+    textarea, input, select {
+      width: 90%;
+      background: rgba(0, 0, 0, 0.85);
+      color: #00b7eb;
+      border: 1px solid #6200ea;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 1rem;
+      margin-top: 20px;
+      font-family: 'Lato', sans-serif;
+      box-shadow: inset 0 1px 3px rgba(0, 183, 235, 0.3);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    textarea:focus, input:focus, select:focus {
+      outline: none;
+      border-color: #00b7eb;
+      box-shadow: inset 0 1px 3px rgba(0, 183, 235, 0.5), 0 0 5px rgba(0, 183, 235, 0.5);
+    }
+
+    textarea { height: 100px; resize: none; }
+    input, select { height: 40px; }
+
+    .loading {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #000; /* Fundo preto */
+      color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 1002; /* Acima de tudo */
+    }
+
+    .offer {
+      margin: 20px;
+      padding: 15px;
+      background: #1e1e1e;
+      border: 2px solid #6200ea;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .offer h3 { color: #00b7eb; }
+    .offer p { margin: 10px 0; }
+    .offer .old-price { text-decoration: line-through; color: #888; }
+    .offer .btn {
+      margin-top: 10px;
+      width: 80%;
+      align-self: center;
+      position: relative;
+      top: 0;
+    }
+
+    .footer, .watermark {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 20px;
+      text-align: center;
+      width: 90%;
+    }
+    .footer a, .watermark a { color: #00b7eb; text-decoration: none; }
+    .footer a:hover, .watermark a:hover { text-decoration: underline; }
+
+    .logo {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #00b7eb;
+      z-index: 999;
+      padding: 5px;
+      background: none;
+    }
+    .logo svg { vertical-align: middle; margin-right: 5px; }
+
+    .logo svg circle {
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { stroke-width: 2; r: 14; }
+      50% { stroke-width: 3; r: 14.5; stroke: #0ff; }
+      100% { stroke-width: 2; r: 14; }
+    }
+
+    .logo::before { /* Faixa de destaque */
+      content: ";
+      position: absolute;
+      top: -10px; /* Ajuste conforme necessário */
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px; /* Largura da faixa */
+      height: 60px; /* Altura da faixa */
+      background: linear-gradient(to bottom, rgba(0, 183, 235, 0.5), rgba(0, 0, 0, 0));
+      border-radius: 50%; /* Forma ovalada */
+      z-index: -1; /* Atrás da logo */
+      filter: blur(10px); /* Efeito de brilho suave */
+    }
+
+    .notification {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #000; /* Fundo preto */
+      color: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      z-index: 1002;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    .timer-bar {
+      position: fixed;
+      bottom: 10px;
+      width: 90%;
+      max-width: 600px;
+      height: 10px;
+      background: #333;
+      border-radius: 5px;
+      display: none;
+    }
+    .timer-progress {
+      width: 0%;
+      height: 100%;
+      background: #0f0;
+      border-radius: 5px;
+      transition: width 60s linear;
+    }
+
+    .donation-box {
+      margin-top: 20px;
+      padding: 15px;
+      background: #1e1e1e;
+      border-radius: 10px;
+      width: 90%;
+      border: 2px solid #00b7eb;
+      box-shadow: 0 0 15px rgba(0, 183, 235, 0.3);
+    }
+    .qr-placeholder {
+      width: 150px;
+      height: 150px;
+      background: #333;
+      margin: 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+    }
+
+    }
+
+    /* Overlay para desfoque */
+    .blur-overlay {
+      display: none; /* Escondido por padrão */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8); /* Fundo mais escuro */
+      backdrop-filter: blur(5px); /* Efeito de desfoque */
+      z-index: 1000; /* Acima do conteúdo normal, abaixo dos popups */
+    }
+
+    /* Estilo pros botões de próximo jogo pra ficar na frente */
+    #nextGame1, #nextGame2, #nextGame3 {
+      position: fixed;
+      top: 65%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1001;
+    }
+  </style>
+</head>
+<body>
+  <!-- Overlay para Desfoque -->
+  <div class="blur-overlay" id="blurOverlay"></div>
+
+  <!-- Logo no Topo -->
+  <div class="logo">
+    <svg width="25" height="25" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="15" cy="15" r="14" stroke="#00b7eb" stroke-width="2"/>
+      <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#00b7eb" font-size="12">TDH</text>
+    </svg>
+  </div>
+
+  <!-- TELA 0: Como Conheceu -->
+  <div id="tela0" class="tela ativa">
+    <h1>Bem-vindo ao TDH.IA</h1>
+    <p>Como você conheceu o TDH.IA?</p>
+    <select id="origem" required>
+      <option value="" disabled selected>Selecione uma opção</option>
+      <option value="instagram">Instagram</option>
+      <option value="tiktok">TikTok</option>
+      <option value="whatsapp">WhatsApp</option>
+      <option value="indicacao">Indicação de Amigo</option>
+      <option value="outros">Outros</option>
+    </select>
+    <input type="text" id="inviteCode" placeholder="Código de convidado (opcional)">
+    <button class="btn" onclick="playFeedback(); validarOrigem()">CONTINUAR</button>
+    <div class="watermark">TDH.IA - Projeto Cognitivo Avançado © 2025</div>
+  </div>
+
+  <!-- TELA 1: Login -->
+  <div id="tela1" class="tela">
+    <h1>Iniciar Diagnóstico</h1>
+    <p>Informe seus dados para prosseguir</p>
+    <input type="text" id="nome" placeholder="Nome completo">
+    <input type="tel" id="telefone" placeholder="(XX) XXXXX-XXXX" oninput="formatarTelefone(this)">
+    <button class="btn" onclick="playFeedback(); validarLogin()">ENTRAR</button>
+    <div class="watermark">TDH.IA - Projeto Cognitivo Avançado © 2025</div>
+  </div>
+
+  <!-- TELA 2: Jogo 1 - Escolha Instintiva -->
+  <div id="tela2" class="tela">
+    <h2>JOGO 1: Escolha Instintiva (Nível 1)</h2>
+    <p>Clique rápido em uma das opções, seu esperto!</p>
+    <div id="gameBox1" class="game-box"></div>
+    <div id="reward1" class="reward"></div>
+    <button class="btn" id="nextGame1" style="display: none;" onclick="playFeedback(); showLoading(3, 'Analisando impulsividade...')">PRÓXIMO JOGO</button>
+    <div class="watermark">TDH.IA - Projeto Cognitivo Avançado © 2025</div>
+  </div>
+
+  <!-- TELA 3: Jogo 2 - Dilemas Morais -->
+  <div id="tela3" class="tela">
+    <h2>JOGO 2: Dilemas Morais (Nível 1)</h2>
+    <p>Escolha com sabedoria, seu maroto!</p>
+    <div id="gameBox2" class="game-box"></div>
+    <div id="reward2" class="reward"></div>
+    <button class="btn" id="nextGame2" style="display: none;" onclick="playFeedback(); showLoading(4, 'Analisando racionalidade...')">PRÓXIMO JOGO</button>
+    <div class="watermark">TDH.IA - Projeto Cognitivo Avançado © 2025</div>
+  </div>
+
+  <!-- TELA 4: Jogo 3 - Autoavaliação Cognitiva -->
+  <div id="tela4" class="tela">
+    <h2>JOGO 3: Autoavaliação Cognitiva (Nível 1)</h2>
+    <p>Responda com sinceridade, seu geniozinho!</p>
+    <div id="gameBox3" class="game-box"></div>
+    <div id="reward3" class="reward"></div>
+    <button class="btn" id="nextGame3" style="display: none;" onclick="playFeedback(); showLoading(5, 'Analisando autopercepção...')">PRÓXIMA ETAPA</button>
+    <div class="watermark">TDH.IA - Projeto Cognitivo Avançado © 2025</div>
+  </div>
+
+  <!-- TELA 5: Análise Final -->
+  <div id="tela5" class="tela">
+    <h2>Análise Final</h2>
+    <p>Diga de forma breve por que você acha que tem TDH:</p>
+    <textarea id="tdhReason" placeholder="Ex.: Dificuldade de foco, impulsividade..."></textarea>
+    <button class="btn" onclick="playFeedback(); validarAnaliseFinal()">ENVIAR RESPOSTA</button>
+    <div id="reward4" class="reward">Muito bem! Você ganhou 300 pontos de Autoconhecimento!</div>
+    <div class="watermark">TDH.IA - Projeto Cognitivo Avançado © 2025</div>
+  </div>
+
+  <!-- TELA 6: Doação -->
+  <div id="tela6" class="tela">
+    <h2>Apoie o TDH.IA</h2>
+    <p style="font-weight: bold; color: #00b7eb;">Sua contribuição faz a diferença!</p>
+    <p>O TDH.IA é mais que um projeto – é uma missão para transformar vidas, ajudando pessoas a superar os desafios do TDH com tecnologia e empatia. Cada real doado (a partir de R$1, R$10 ou R$20) nos permite alcançar mais pessoas e oferecer suporte real. Quanto maior sua doação, maior o impacto e os brindes exclusivos que você recebe como agradecimento!</p>
+    <div class="donation-box">
+      <p>Contribua via Pix:</p>
+      <img src="pix_qr.jpg" alt="QR Code Pix" style="width: 150px; height: 150px;">
+      <input type="text" id="pixKey" value="00020101021126670014br.gov.bcb.pix0136e683f24c-8b1c-40f8-97b0-87fd4cf800bb0205IaTdh52040000530398654041.005802BR5923geovane rodrigues da si6009SAO PAULO61080131010062090505IaTdh6304F7BF" readonly>
+      <button class="btn" onclick="playFeedback(); copyPix()">COPIAR CHAVE PIX</button>
+      <button id="confirmPix" class="btn" style="display:none;" onclick="playFeedback(); showLoading(7, 'Processando doação...', 5000)">CONFIRMEI O PAGAMENTO</button>
+    </div>
+    <div class="watermark">TDH.IA - Projeto Cognitivo Avançado © 2025</div>
+  </div>
+
+  <!-- TELA 7: Aguardando Pagamento -->
+  <div id="tela7" class="tela">
+    <h2>Aguardando Confirmação do Pagamento</h2>
+    <p>Estamos verificando sua doação. Isso pode levar até 30 segundos. Por favor, aguarde...</p>
+    <button id="manualConfirm" class="btn" style="display:none;" onclick="playFeedback(); showLoading(8, 'Finalizando confirmação...')">JÁ FIZ O PAGAMENTO</button>
+    <div class="watermark">TDH.IA - Projeto Cognitivo Avançado © 2025</div>
+  </div>
+
+  <!-- TELA 8: Primeiro Brinde (Código de Convidado) -->
+  <div id="tela8" class="tela">
+    <h2>Primeiro Brinde: Recupere Sua Doação!</h2>
+    <p>Convide amigos para conhecer o TDH.IA e recupere o valor da sua doação! Compartilhe seu código único pelo WhatsApp:</p>
+    <input type="text" id="inviteCodeDisplay" readonly>
+    <button class="btn" onclick="playFeedback(); shareWhatsApp()">COMPARTILHAR NO WHATSAPP</button>
+    <button class="btn" onclick="playFeedback(); showLoading(9, 'Carregando diagnóstico...')">NÃO, OBRIGADO</button>
+    <div class="watermark">TDH.IA - Projeto Cognitivo Avançado © 2025</div>
+  </div>
+
+  <!-- TELA 9: Diagnóstico -->
+  <div id="tela9" class="tela">
+    <h2>RESULTADO DO SEU DIAGNÓSTICO</h2>
+    <div id="diagnostico"></div>
+    <p><strong>Primeiro Brinde:</strong> Você recebeu a chance de recuperar sua doação compartilhando o TDH.IA!</p>
+    <p><strong>Segundo Brinde:</strong> 50% de desconto em todos os planos de tratamento (disponível na próxima tela).</p>
+    <button class="btn" onclick="playFeedback(); showLoading(10, 'Preparando planos de tratamento...')">INICIAR TRATAMENTO AGORA</button>
+    <div class="footer">
+      <p>We protect your payment data with encryption to ensure bank-level security.</p>
+      <p>By clicking 'Pay Now', I declare that (i) I am aware that Kiwify is processing this purchase on behalf of PSICANALISANDO-SE SOLUCOES LTDA and has no responsibility for the content, offer, and does not perform prior control of the infoproduct; (ii) that I have read and agree to the <a href="#">Purchase Terms</a>, <a href="#">Terms of Use</a>, and <a href="#">Privacy Policy</a>.</p>
+      <p>This site is protected by Google reCAPTCHA.</p>
+      <p>© 2025 TDH.IA - Todos os direitos reservados.</p>
+    </div>
+    <div class="watermark">TDH.IA - Projeto Cognitivo Avançado © 2025</div>
+  </div>
+
+  <!-- TELA 10: Ofertas -->
+  <div id="tela10" class="tela">
+    <h2>Escolha Seu Plano com 50% de Desconto</h2>
+    <div class="offer">
+      <h3>Tratamento sem Laudo</h3>
+      <p><span class="old-price">R$79,80</span> <strong>R$39,90</strong> (até 3x sem juros)</p>
+      <p>Protocolo validado sem necessidade de laudo</p>
+      <a href="https://pay.kiwify.com.br/T4SASfX?afid=50SyC34p" class="btn" onclick="playFeedback(); showLoadingRedirect(this.href)">SELECIONAR</a>
+    </div>
+    <div class="offer">
+      <h3>Tratamento com Laudo</h3>
+      <p><span class="old-price">R$94,00</span> <strong>R$47,00</strong> (até 3x sem juros)</p>
+      <p>Protocolo validado com laudo oficial</p>
+      <a href="https://pay.kiwify.com.br/97UKKrt?afid=50SyC34p" class="btn" onclick="playFeedback(); showLoadingRedirect(this.href)">SELECIONAR</a>
+    </div>
+    <div class="offer">
+      <h3>Consulta Médica Completa</h3>
+      <p><span class="old-price">R$1560,00</span> <strong>R$780,00</strong> (até 3x sem juros)</p>
+      <p>Consulta com especialistas e diagnóstico detalhado</p>
+      <button class="btn" onclick="playFeedback(); showNotification()">SELECIONAR</button>
+    </div>
+    <div class="watermark">TDH.IA - Projeto Cognitivo Avançado © 2025</div>
+  </div>
+
+  <!-- Notificação de Agenda Indisponível -->
+  <div id="notification" class="notification">
+    <p>Agenda para consultas médicas completas está cheia no momento. Escolha outra opção.</p>
+    <button class="btn" onclick="hideNotification()">OK</button>
+  </div>
+
+  <!-- Tela de Carregamento -->
+  <div id="loading" class="loading">
+    <h2 id="loadingMessage">Processando sua solicitação...</h2>
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Barra de Tempo Ilusória -->
+  <div id="timerBar" class="timer-bar">
+    <div id="timerProgress" class="timer-progress"></div>
+  </div>
+
+  <audio id="clickSound" src="ui_click.mp3" preload="auto"></audio>
+
+  <script>
+    let currentGame = 1;
+    let gameData = { impulsividade: 0, racionalidade: 0, autopercepcao: 0 };
+    let inviteCode = '';
+
+    function mudaTela(numeroTela) {
+      const telas = document.querySelectorAll(".tela");
+      let telaAtual = null;
+      telas.forEach(tela => {
+        if (tela.classList.contains("ativa")) {
+          telaAtual = tela;
+        }
+      });
+
+      if (telaAtual) {
+        telaAtual.classList.add("slide-out");
+        telaAtual.classList.remove("ativa");
+
+        // Espera a animação de saída terminar antes de mostrar a nova tela
+        setTimeout(() => {
+          telaAtual.classList.remove("slide-out"); // Limpa a classe para futuras transições
+
+          const novaTela = document.getElementById(`tela${numeroTela}`);
+          novaTela.classList.add("ativa");
+          document.getElementById("blurOverlay").style.display = "none"; // Esconde o overlay ao mudar de tela
+          window.scrollTo(0, 0); // Rola para o topo
+
+          // Atualiza barra de progresso (se aplicável)
+          if (numeroTela >= 2 && numeroTela <= 4) {
+            document.getElementById("timerBar").style.display = "block";
+            document.getElementById("timerProgress").style.width = ((numeroTela - 1) * 33.33) + "%";
+          } else {
+            document.getElementById("timerBar").style.display = "none";
+            document.getElementById("timerProgress").style.width = "0%";
+          }
+        }, 500); // Tempo da animação CSS
+      } else {
+        // Caso inicial (nenhuma tela ativa ainda)
+        const novaTela = document.getElementById(`tela${numeroTela}`);
+        novaTela.classList.add("ativa");
+        window.scrollTo(0, 0);
+      }
+    }
+
+    function showLoading(nextScreen, message, delay = 2000) {
+      const loading = document.getElementById('loading');
+      const loadingMessage = document.getElementById('loadingMessage');
+      loadingMessage.textContent = message || 'Processando sua solicitação...';
+      loading.style.display = 'block';
+      setTimeout(() => {
+        loading.style.display = 'none';
+        if (nextScreen) {
+          mudaTela(nextScreen);
+          if (nextScreen === 2) initGame1();
+          if (nextScreen === 3) initGame2();
+          if (nextScreen === 4) initGame3();
+          if (nextScreen === 7) {
+            setTimeout(() => {
+              document.getElementById('manualConfirm').style.display = 'block';
+            }, 30000);
+          }
+          if (nextScreen === 8) {
+            document.getElementById('inviteCodeDisplay').value = inviteCode;
+          }
+          if (nextScreen === 9) showDiagnosis();
+        }
+      }, delay);
+    }
+
+    function showLoadingRedirect(url) {
+      const loading = document.getElementById('loading');
+      loading.style.display = 'block';
+      setTimeout(() => {
+        loading.style.display = 'none';
+        window.location.href = url;
+      }, 2000);
+    }
+
+    function showNotification() {
+      document.getElementById('notification').style.display = 'block';
+    }
+
+    function hideNotification() {
+      document.getElementById('notification').style.display = 'none';
+    }
+
+    function copyPix() {
+      const pixKey = document.getElementById('pixKey');
+      pixKey.select();
+      document.execCommand('copy');
+      alert('Chave Pix copiada!');
+      setTimeout(() => {
+        document.getElementById('confirmPix').style.display = 'block';
+      }, 10000);
+    }
+
+    function shareWhatsApp() {
+      const code = document.getElementById('inviteCodeDisplay').value;
+      const message = encodeURIComponent(`Conheça o TDH.IA e transforme sua vida! Use meu código: ${code} em https://inteligencia-tdh.vercel.app/`);
+      window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
+      showLoading(9, 'Carregando diagnóstico...');
+    }
+
+    function validarOrigem() {
+      const origem = document.getElementById('origem').value;
+      if (!origem) {
+        alert('Por favor, selecione uma opção.');
+        return;
+      }
+      inviteCode = Math.random().toString(36).substr(2, 8);
+      showLoading(1, 'Iniciando seu diagnóstico...');
+    }
+
+    function formatarTelefone(input) {
+      let value = input.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      if (value.length <= 10) {
+        value = value.replace(/(\d{2})(\d{0,4})(\d{0,4})/, '($1) $2-$3');
+      } else {
+        value = value.replace(/(\d{2})(\d{0,5})(\d{0,4})/, '($1) $2-$3');
+      }
+      input.value = value.trim();
+    }
+
+    function validarLogin() {
+      const nome = document.getElementById('nome').value.trim();
+      const telefone = document.getElementById('telefone').value.trim();
+      if (nome.length < 5) {
+        alert('Por favor, informe um nome completo válido.');
+        return;
+      }
+      if (!telefone.match(/^\(\d{2}\)\s\d{4,5}-\d{4}$/)) {
+        alert('Por favor, informe um telefone válido.');
+        return;
+      }
+      showLoading(2, 'Preparando jogos cognitivos...');
+    }
+
+    function validarAnaliseFinal() {
+      const texto = document.getElementById('tdhReason').value.trim();
+      if (texto.length < 10) {
+        alert('Por favor, escreva pelo menos 10 caracteres.');
+        return;
+      }
+      document.getElementById('reward4').style.display = 'block';
+      setTimeout(() => showLoading(6, 'Finalizando análise cognitiva...'), 2000);
+    }
+
+    // Jogo 1: Escolha Instintiva (simula impulsividade)
+    function initGame1() {
+      const gameBox1 = document.getElementById('gameBox1');
+      gameBox1.innerHTML = `
+        <h3>Escolha Instintiva - Clique rápido, seu esperto!</h3>
+        <div id="choicePair" style="display: flex; flex-direction: row; justify-content: center; gap: 20px;"></div>
+        <p id="timeLeft">Tempo: 10s</p>
+        <p id="score1">Pontos: 0</p>
+      `;
+      let gameEnded = false;
+
+      const choices = [
+        { left: "💰 Dinheiro", right: "🕉️ Paz", impulsiva: "left" },
+        { left: "🍔 Fast Food", right: "📖 Livro", impulsiva: "left" },
+        { left: "🎮 Jogos", right: "🌳 Natureza", impulsiva: "left" }
+      ];
+      let score = 0;
+      let time = 10;
+      let currentPair = 0;
+
+      function showPair() {
+        if (currentPair >= choices.length || gameEnded) {
+          gameData.impulsividade = score;
+          gameEnded = true;
+          document.getElementById('reward1').textContent = `Impulsividade: ${score}/3 - Bora pro próximo, seu maroto!`;
+          document.getElementById('reward1').style.display = 'block';
+          document.getElementById('nextGame1').style.display = 'block';
+          return;
+        }
+        const pair = choices[currentPair];
+        document.getElementById('choicePair').innerHTML = `
+          <button id="leftChoice" class="game-item">${pair.left}</button>
+          <button id="rightChoice" class="game-item">${pair.right}</button>
+        `;
+        document.getElementById('leftChoice').onclick = () => {
+          if (!gameEnded) {
+            if (pair.impulsiva === "left") score++;
+            currentPair++;
+            showPair();
+          }
+        };
+        document.getElementById('rightChoice').onclick = () => {
+          if (!gameEnded) {
+            if (pair.impulsiva === "right") score++;
+            currentPair++;
+            showPair();
+          }
+        };
+      }
+
+      showPair();
+      const timer = setInterval(() => {
+        time--;
+        document.getElementById('timeLeft').textContent = `Tempo: ${time}s`;
+        if (time <= 0) {
+          clearInterval(timer);
+          gameEnded = true;
+          gameData.impulsividade = score;
+          document.getElementById('reward1').textContent = `Impulsividade: ${score}/3 - Bora pro próximo, seu maroto!`;
+          document.getElementById('reward1').style.display = 'block';
+          document.getElementById('nextGame1').style.display = 'block';
+        }
+      }, 1000);
+    }
+
+    // Jogo 2: Dilemas Morais (registra respostas e analisa)
+    function initGame2() {
+      const gameBox2 = document.getElementById('gameBox2');
+      gameBox2.innerHTML = `
+        <h3>Dilemas Morais - Escolha com sabedoria, seu maroto!</h3>
+        <div id="dilemaQuestion"></div>
+        <div id="dilemaOptions" style="margin-top: 20px; display: flex; flex-direction: row; justify-content: center; gap: 20px;"></div>
+        <p id="Progress2">Progresso: 0/3</p>
+      `;
+      let gameEnded = false;
+
+      const dilemmas = [
+        { question: "Vê alguém furar fila, o que faz?", impulsiva: "Dá um soco na cara!", racional: "Deixa pra lá" },
+        { question: "Amigo te deve grana, o que faz?", impulsiva: "Ameaça ele!", racional: "Pede com calma" },
+        { question: "Chefe te xinga, o que faz?", impulsiva: "Manda ele se foder!", racional: "Ignora e segue" }
+      ];
+      let currentDilema = 0;
+      let responses = [];
+
+      function showDilema() {
+        if (currentDilema >= dilemmas.length || gameEnded) {
+          gameData.racionalidade = responses.filter(r => r === "racional").length;
+          gameEnded = true;
+          document.getElementById('reward2').textContent = `Racionalidade: ${gameData.racionalidade}/3 - Mais um passo, seu geniozinho!`;
+          document.getElementById('reward2').style.display = 'block';
+          document.getElementById('nextGame2').style.display = 'block';
+          return;
+        }
+        const d = dilemmas[currentDilema];
+        document.getElementById('dilemaQuestion').textContent = d.question;
+        document.getElementById('dilemaOptions').innerHTML = `
+          <button id="impulsiva" class="game-item">${d.impulsiva}</button>
+          <button id="racional" class="game-item">${d.racional}</button>
+        `;
+        document.getElementById('impulsiva').onclick = () => {
+          if (!gameEnded) {
+            responses.push("impulsiva");
+            currentDilema++;
+            document.getElementById('Progress2').textContent = `Progresso: ${currentDilema}/3`;
+            showDilema();
+          }
+        };
+        document.getElementById('racional').onclick = () => {
+          if (!gameEnded) {
+            responses.push("racional");
+            currentDilema++;
+            document.getElementById('Progress2').textContent = `Progresso: ${currentDilema}/3`;
+            showDilema();
+          }
+        };
+      }
+
+      showDilema();
+    }
+
+    // Jogo 3: Autoavaliação Cognitiva
+    function initGame3() {
+      const gameBox3 = document.getElementById('gameBox3');
+      gameBox3.innerHTML = `
+        <h3>Autoavaliação Cognitiva - Confessa, seu geniozinho!</h3>
+        <div id="autoQuestion"></div>
+        <div id="autoOptions" style="margin-top: 20px; display: flex; flex-direction: row; justify-content: center; gap: 20px;"></div>
+        <p id="Progress3">Progresso: 0/3</p>
+      `;
+      let gameEnded = false;
+
+      const questions = [
+        { question: "Você procrastina mesmo sabendo que vai se prejudicar?" },
+        { question: "Você perde foco fácil em tarefas chatas?" },
+        { question: "Você age sem pensar nas consequências?" }
+      ];
+      let currentQuestion = 0;
+      let autoScore = 0;
+
+      function showQuestion() {
+        if (currentQuestion >= questions.length || gameEnded) {
+          gameData.autopercepcao = autoScore;
+          gameEnded = true;
+          document.getElementById('reward3').textContent = `Autopercepção: ${autoScore}/6 - Vamos pro diagnóstico, seu esperto!`;
+          document.getElementById('reward3').style.display = 'block';
+          document.getElementById('nextGame3').style.display = 'block';
+          document.getElementById('blurOverlay').style.display = 'block'; // Mostra o overlay de desfoque
+          return;
+        }
+        const q = questions[currentQuestion];
+        document.getElementById('autoQuestion').textContent = q.question;
+        document.getElementById('autoOptions').innerHTML = `
+          <button id="quaseSempre" class="game-item">Quase sempre</button>
+          <button id="as vezes" class="game-item">Às vezes</button>
+          <button id="raramente" class="game-item">Raramente</button>
+        `;
+        document.getElementById('quaseSempre').onclick = () => {
+          if (!gameEnded) {
+            autoScore += 2;
+            currentQuestion++;
+            document.getElementById('Progress3').textContent = `Progresso: ${currentQuestion}/3`;
+            showQuestion();
+          }
+        };
+        document.getElementById('as vezes').onclick = () => {
+          if (!gameEnded) {
+            autoScore += 1;
+            currentQuestion++;
+            document.getElementById('Progress3').textContent = `Progresso: ${currentQuestion}/3`;
+            showQuestion();
+          }
+        };
+        document.getElementById('raramente').onclick = () => {
+          if (!gameEnded) {
+            autoScore += 0;
+            currentQuestion++;
+            document.getElementById('Progress3').textContent = `Progresso: ${currentQuestion}/3`;
+            showQuestion();
+          }
+        };
+      }
+
+      showQuestion();
+    }
+
+    // Função para vibrar e tocar som
+    function playFeedback() {
+      // Vibração
+      if (navigator.vibrate) {
+        navigator.vibrate(50); // Vibra por 50ms
+      }
+      // Som
+      const clickSound = document.getElementById("clickSound");
+      if (clickSound) {
+        // clickSound.currentTime = 0; // REMOVIDO - Tentativa de corrigir atraso
+        clickSound.play().catch(error => console.error("Erro ao tocar som:", error));
+      }
+    }
+
+    // Diagnóstico Automático (simulação de IA cognitiva)
+    function showDiagnosis() {
+      const totalImpulsividade = gameData.impulsividade;
+      const totalRacionalidade = gameData.racionalidade;
+      const totalAutopercepcao = gameData.autopercepcao;
+      let diagnosis = "";
+
+      if (totalImpulsividade > 2 && totalRacionalidade < 1 && totalAutopercepcao > 4) {
+        diagnosis = "Você é um vulcão de energia, TDAH nível máximo! Impulsivo, procrastinador e age na emoção, seu maroto!";
+      } else if (totalImpulsividade > 1 || totalAutopercepcao > 3) {
+        diagnosis = "Tá na linha do risco, seu esperto! Mostra traços de TDAH, mas com jeitinho dá pra dominar essa fera!";
+      } else {
+        diagnosis = "Mandou bem, seu geniozinho organizado! Parece que TDAH não é com você, ou você é ninja em disfarçar!";
+      }
+
+      document.getElementById('diagnostico').innerHTML = `
+        <p>Impulsividade: ${totalImpulsividade}/3</p>
+        <p>Racionalidade: ${totalRacionalidade}/3</p>
+        <p>Autopercepção: ${totalAutopercepcao}/6</p>
+        <p>${diagnosis}</p>
+        <p style="color:#0f0; font-weight:bold;">TDH do tipo combinado com traços de impulsividade emocional e bloqueios executivos.</p>
+        <p>Recomendamos o início do alinhamento neurocomportamental com o protocolo validado por especialistas.</p>
+      `;
+    }
+  </script>
+</body>
+</html>
